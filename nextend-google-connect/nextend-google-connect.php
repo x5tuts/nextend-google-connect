@@ -232,13 +232,18 @@ function new_google_login_action() {
         $secure_cookie = is_ssl();
         $secure_cookie = apply_filters('secure_signon_cookie', $secure_cookie, array());
         global $auth_secure_cookie; // XXX ugly hack to pass this to wp_authenticate_cookie
+		// Beginn JSON Objekt auslesen
+		$googlepicture = @file_get_contents('http://picasaweb.google.com/data/entry/api/user/' . $u['id'] .'?alt=json');
+        $jsonarray = json_decode($googlepicture, true);
+		$googlebild = $jsonarray["entry"]["gphoto\$thumbnail"]["\$t"];
+		// Ende JSON Objekt auslesen
 
         $auth_secure_cookie = $secure_cookie;
         wp_set_auth_cookie($ID, true, $secure_cookie);
         $user_info = get_userdata($ID);
         do_action('wp_login', $user_info->user_login, $user_info);
         do_action('nextend_google_user_logged_in', $ID, $u, $oauth2);
-        update_user_meta($ID, 'google_profile_picture', 'https://profiles.google.com/s2/photos/profile/' . $u['id']);
+        update_user_meta($ID, 'google_profile_picture', $googlebild);
       }
     } else {
       if (new_google_is_user_connected()) { // It was a simple login
